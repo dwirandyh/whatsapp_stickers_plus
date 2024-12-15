@@ -8,8 +8,8 @@
         android:allowBackup="false" 
         android:fullBackupContent="false">
 
-        <provider 
-            android:name=".StickerContentProvider" 
+        <provider
+            android:name=".StickerContentProvider"
             android:authorities="${applicationId}.stickercontentprovider" 
             android:enabled="true"
             android:exported="true"
