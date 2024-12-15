@@ -1,7 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" 
     package="dev.applicazza.flutter.plugins.whatsapp_stickers_plus">
-
+    <queries>
+        <!-- Query for WhatsApp -->
+        <package android:name="com.whatsapp" />
+        <!-- Query for WhatsApp Business -->
+        <package android:name="com.whatsapp.w4b" />
+    </queries>
     <application 
         android:name="io.flutter.app.FlutterApplication" 
         tools:ignore="GoogleAppIndexingWarning" 
