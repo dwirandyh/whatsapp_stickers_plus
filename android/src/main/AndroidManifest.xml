@@ -7,8 +7,7 @@
         <!-- Query for WhatsApp Business -->
         <package android:name="com.whatsapp.w4b" />
     </queries>
-    <application 
-        android:name="io.flutter.app.FlutterApplication" 
+    <application
         tools:ignore="GoogleAppIndexingWarning" 
         android:allowBackup="false" 
         android:fullBackupContent="false">
