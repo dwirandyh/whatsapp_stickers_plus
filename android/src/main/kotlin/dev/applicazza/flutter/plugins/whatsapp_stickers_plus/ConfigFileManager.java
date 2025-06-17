@@ -65,7 +65,7 @@ public class ConfigFileManager {
         List<Sticker> newStickers = new ArrayList<Sticker>();
         assert stickers != null;
         for (Map.Entry<String, List<String>> entry : stickers.entrySet()) {
-            Sticker s = new Sticker(getFileName(entry.getKey()), entry.getValue());
+            Sticker s = new Sticker(getFileName(entry.getKey()), entry.getValue(), "");
 
             newStickers.add(s);
         }

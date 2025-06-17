@@ -32,20 +32,21 @@ import java.util.List;
 import java.util.Objects;
 
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.ANDROID_APP_DOWNLOAD_LINK_IN_QUERY;
+import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.ANIMATED_STICKER_PACK;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.AVOID_CACHE;
+import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.IMAGE_DATA_VERSION;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.IOS_APP_DOWNLOAD_LINK_IN_QUERY;
-import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.LICENSE_AGREENMENT_WEBSITE;
+import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.LICENSE_AGREEMENT_WEBSITE;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.PRIVACY_POLICY_WEBSITE;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.PUBLISHER_EMAIL;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.PUBLISHER_WEBSITE;
+import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.STICKER_FILE_ACCESSIBILITY_TEXT_IN_QUERY;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.STICKER_FILE_EMOJI_IN_QUERY;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.STICKER_FILE_NAME_IN_QUERY;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.STICKER_PACK_ICON_IN_QUERY;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.STICKER_PACK_IDENTIFIER_IN_QUERY;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.STICKER_PACK_NAME_IN_QUERY;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.STICKER_PACK_PUBLISHER_IN_QUERY;
-import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.IMAGE_DATA_VERSION;
-import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.ANIMATED_STICKER_PACK;
 
 class StickerPackLoader {
 
@@ -85,20 +86,17 @@ class StickerPackLoader {
 
     @NonNull
     private static List<Sticker> getStickersForPack(Context context, StickerPack stickerPack) {
-        final List<Sticker> stickers = fetchFromContentProviderForStickers(stickerPack.identifier, context);
+        final List<Sticker> stickers = fetchFromContentProviderForStickers(stickerPack.identifier, context.getContentResolver(), context);
         for (Sticker sticker : stickers) {
             final byte[] bytes;
             try {
                 bytes = fetchStickerAsset(stickerPack.identifier, sticker.imageFileName, context);
                 if (bytes.length <= 0) {
-                    throw new IllegalStateException(
-                            "Asset file is empty, pack: " + stickerPack.name + ", sticker: " + sticker.imageFileName);
+                    throw new IllegalStateException("Asset file is empty, pack: " + stickerPack.name + ", sticker: " + sticker.imageFileName);
                 }
                 sticker.setSize(bytes.length);
             } catch (IOException | IllegalArgumentException e) {
-                throw new IllegalStateException(
-                        "Asset file doesn't exist. pack: " + stickerPack.name + ", sticker: " + sticker.imageFileName,
-                        e);
+                throw new IllegalStateException("Asset file doesn't exist. pack: " + stickerPack.name + ", sticker: " + sticker.imageFileName, e);
             }
         }
         return stickers;
@@ -113,19 +111,16 @@ class StickerPackLoader {
             final String name = cursor.getString(cursor.getColumnIndexOrThrow(STICKER_PACK_NAME_IN_QUERY));
             final String publisher = cursor.getString(cursor.getColumnIndexOrThrow(STICKER_PACK_PUBLISHER_IN_QUERY));
             final String trayImage = cursor.getString(cursor.getColumnIndexOrThrow(STICKER_PACK_ICON_IN_QUERY));
-            final String androidPlayStoreLink = cursor
-                    .getString(cursor.getColumnIndexOrThrow(ANDROID_APP_DOWNLOAD_LINK_IN_QUERY));
+            final String androidPlayStoreLink = cursor.getString(cursor.getColumnIndexOrThrow(ANDROID_APP_DOWNLOAD_LINK_IN_QUERY));
             final String iosAppLink = cursor.getString(cursor.getColumnIndexOrThrow(IOS_APP_DOWNLOAD_LINK_IN_QUERY));
             final String publisherEmail = cursor.getString(cursor.getColumnIndexOrThrow(PUBLISHER_EMAIL));
             final String publisherWebsite = cursor.getString(cursor.getColumnIndexOrThrow(PUBLISHER_WEBSITE));
             final String privacyPolicyWebsite = cursor.getString(cursor.getColumnIndexOrThrow(PRIVACY_POLICY_WEBSITE));
-            final String licenseAgreementWebsite = cursor
-                    .getString(cursor.getColumnIndexOrThrow(LICENSE_AGREENMENT_WEBSITE));
+            final String licenseAgreementWebsite = cursor.getString(cursor.getColumnIndexOrThrow(LICENSE_AGREEMENT_WEBSITE));
             final String imageDataVersion = cursor.getString(cursor.getColumnIndexOrThrow(IMAGE_DATA_VERSION));
             final boolean avoidCache = cursor.getShort(cursor.getColumnIndexOrThrow(AVOID_CACHE)) > 0;
             final boolean animatedStickerPack = cursor.getShort(cursor.getColumnIndexOrThrow(ANIMATED_STICKER_PACK)) > 0;
-            final StickerPack stickerPack = new StickerPack(identifier, name, publisher, trayImage, publisherEmail,
-                    publisherWebsite, privacyPolicyWebsite, licenseAgreementWebsite, imageDataVersion, avoidCache, animatedStickerPack);
+            final StickerPack stickerPack = new StickerPack(identifier, name, publisher, trayImage, publisherEmail, publisherWebsite, privacyPolicyWebsite, licenseAgreementWebsite, imageDataVersion, avoidCache, animatedStickerPack);
             stickerPack.setAndroidPlayStoreLink(androidPlayStoreLink);
             stickerPack.setIosAppStoreLink(iosAppLink);
             stickerPackList.add(stickerPack);
@@ -134,23 +129,23 @@ class StickerPackLoader {
     }
 
     @NonNull
-    private static List<Sticker> fetchFromContentProviderForStickers(String identifier, Context context) {
-        Uri uri = getStickerListUri(context, identifier);
-        ContentResolver contentResolver = context.getContentResolver();
-        final String[] projection = { STICKER_FILE_NAME_IN_QUERY, STICKER_FILE_EMOJI_IN_QUERY };
+    private static List<Sticker> fetchFromContentProviderForStickers(String identifier, ContentResolver contentResolver, Context context) {
+        Uri uri = getStickerListUri(context,identifier);
+
+        final String[] projection = {STICKER_FILE_NAME_IN_QUERY, STICKER_FILE_EMOJI_IN_QUERY, STICKER_FILE_ACCESSIBILITY_TEXT_IN_QUERY};
         final Cursor cursor = contentResolver.query(uri, projection, null, null, null);
         List<Sticker> stickers = new ArrayList<>();
         if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
             do {
                 final String name = cursor.getString(cursor.getColumnIndexOrThrow(STICKER_FILE_NAME_IN_QUERY));
-                final String emojisConcatenated = cursor
-                        .getString(cursor.getColumnIndexOrThrow(STICKER_FILE_EMOJI_IN_QUERY));
+                final String emojisConcatenated = cursor.getString(cursor.getColumnIndexOrThrow(STICKER_FILE_EMOJI_IN_QUERY));
+                final String accessibilityText = cursor.getString(cursor.getColumnIndexOrThrow(STICKER_FILE_ACCESSIBILITY_TEXT_IN_QUERY));
                 List<String> emojis = new ArrayList<>(StickerPackValidator.EMOJI_MAX_LIMIT);
                 if (!TextUtils.isEmpty(emojisConcatenated)) {
                     emojis = Arrays.asList(emojisConcatenated.split(","));
                 }
-                stickers.add(new Sticker(name, emojis));
+                stickers.add(new Sticker(name, emojis, accessibilityText));
             } while (cursor.moveToNext());
         }
         if (cursor != null) {

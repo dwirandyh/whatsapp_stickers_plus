@@ -7,7 +7,6 @@
  */
 
 package dev.applicazza.flutter.plugins.whatsapp_stickers_plus;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -26,16 +25,13 @@ class StickerPack implements Parcelable {
     final boolean avoidCache;
     final boolean animatedStickerPack;
 
-
     String iosAppStoreLink;
     private List<Sticker> stickers;
     private long totalSize;
     String androidPlayStoreLink;
     private boolean isWhitelisted;
 
-    StickerPack(String identifier, String name, String publisher, String trayImageFile, String publisherEmail,
-            String publisherWebsite, String privacyPolicyWebsite, String licenseAgreementWebsite,
-            String imageDataVersion, boolean avoidCache, boolean animatedStickerPack) {
+    StickerPack(String identifier, String name, String publisher, String trayImageFile, String publisherEmail, String publisherWebsite, String privacyPolicyWebsite, String licenseAgreementWebsite, String imageDataVersion, boolean avoidCache, boolean animatedStickerPack) {
         this.identifier = identifier;
         this.name = name;
         this.publisher = publisher;
@@ -134,5 +130,6 @@ class StickerPack implements Parcelable {
         dest.writeByte((byte) (isWhitelisted ? 1 : 0));
         dest.writeString(imageDataVersion);
         dest.writeByte((byte) (avoidCache ? 1 : 0));
+        dest.writeByte((byte) (animatedStickerPack ? 1 : 0));
     }
 }
