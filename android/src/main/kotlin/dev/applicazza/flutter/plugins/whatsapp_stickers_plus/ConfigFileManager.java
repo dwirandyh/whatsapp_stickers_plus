@@ -120,6 +120,7 @@ public class ConfigFileManager {
             obj.put("publisher_website", s.publisherWebsite);
             obj.put("privacy_policy_website", s.privacyPolicyWebsite);
             obj.put("license_agreement_website", s.licenseAgreementWebsite);
+            obj.put("animated_sticker_pack", s.animatedStickerPack);
 
             JSONArray stickerList = new JSONArray();
             for (Sticker _sticker : s.getStickers()) {

@@ -18,6 +18,7 @@ import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -82,24 +83,30 @@ public class StickerContentProvider extends ContentProvider {
     public boolean onCreate() {
         final String authority = WhatsappStickersPlugin.getContentProviderAuthority(getContext());
         if (!authority.startsWith(Objects.requireNonNull(getContext()).getPackageName())) {
-            throw new IllegalStateException("your authority (" + authority + ") for the content provider should start with your package name: " + getContext().getPackageName());
+            throw new IllegalStateException(
+                    "your authority (" + authority + ") for the content provider should start with your package name: "
+                            + getContext().getPackageName());
         }
 
-        //the call to get the metadata for the sticker packs.
+        // generate config JSON file if not exists
+        try {
+            ConfigFileManager.generateConfigFile(getContext());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        // the call to get the metadata for the sticker packs.
         MATCHER.addURI(authority, METADATA, METADATA_CODE);
 
-        //the call to get the metadata for single sticker pack. * represent the identifier
+        // the call to get the metadata for single sticker pack. * represent the
+        // identifier
         MATCHER.addURI(authority, METADATA + "/*", METADATA_CODE_FOR_SINGLE_PACK);
 
-        //gets the list of stickers for a sticker pack, * represent the identifier.
+        // gets the list of stickers for a sticker pack, * respresent the identifier.
         MATCHER.addURI(authority, STICKERS + "/*", STICKERS_CODE);
 
-        for (StickerPack stickerPack : getStickerPackList()) {
-            MATCHER.addURI(authority, STICKERS_ASSET + "/" + stickerPack.identifier + "/" + stickerPack.trayImageFile, STICKER_PACK_TRAY_ICON_CODE);
-            for (Sticker sticker : stickerPack.getStickers()) {
-                MATCHER.addURI(authority, STICKERS_ASSET + "/" + stickerPack.identifier + "/" + sticker.imageFileName, STICKERS_ASSET_CODE);
-            }
-        }
+        // Gets the an asset from a sticker pack
+        MATCHER.addURI(authority, STICKERS_ASSET + "/*/*", STICKERS_ASSET_CODE);
 
         return true;
     }
@@ -269,11 +276,34 @@ public class StickerContentProvider extends ContentProvider {
         return null;
     }
 
-    private AssetFileDescriptor fetchFile(@NonNull Uri uri, @NonNull AssetManager am, @NonNull String fileName, @NonNull String identifier) {
+    private AssetFileDescriptor fetchFile(@NonNull final Uri uri, @NonNull final AssetManager am,
+            @NonNull final String fileName, @NonNull final String identifier) {
+        return (fileName.contains("_MZN_AD_")) ? fetchAssetFile(uri, am, fileName, identifier)
+                : fetchNonAssetFile(uri, fileName, identifier);
+    }
+
+    private AssetFileDescriptor fetchNonAssetFile(final Uri uri, final String fileName, final String identifier) {
         try {
-            return am.openFd(identifier + "/" + fileName);
-        } catch (IOException e) {
-            Log.e(Objects.requireNonNull(getContext()).getPackageName(), "IOException when getting asset file, uri:" + uri, e);
+            String fname = fileName.replace("_MZN_FD_", File.separator);
+            final File file = new File(fname);
+            return new AssetFileDescriptor(ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY), 0,
+                    AssetFileDescriptor.UNKNOWN_LENGTH);
+        } catch (final IOException e) {
+            Log.e(Objects.requireNonNull(getContext()).getPackageName(),
+                    "IOException when getting asset file, uri:" + uri, e);
+            return null;
+        }
+    }
+
+    private AssetFileDescriptor fetchAssetFile(@NonNull final Uri uri, @NonNull final AssetManager am,
+            @NonNull final String fileName, @NonNull final String identifier) {
+        try {
+            String fname = fileName.replace("_MZN_AD_", File.separator);
+            String f = "flutter_assets/" + fname;
+            return am.openFd(f);
+        } catch (final IOException e) {
+            Log.e(Objects.requireNonNull(getContext()).getPackageName(),
+                    "IOException when getting asset file, uri:" + uri, e);
             return null;
         }
     }
