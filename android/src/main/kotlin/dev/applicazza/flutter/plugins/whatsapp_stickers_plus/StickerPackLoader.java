@@ -45,6 +45,7 @@ import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerConte
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.STICKER_PACK_NAME_IN_QUERY;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.STICKER_PACK_PUBLISHER_IN_QUERY;
 import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.IMAGE_DATA_VERSION;
+import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.StickerContentProvider.ANIMATED_STICKER_PACK;
 
 class StickerPackLoader {
 
@@ -122,8 +123,9 @@ class StickerPackLoader {
                     .getString(cursor.getColumnIndexOrThrow(LICENSE_AGREENMENT_WEBSITE));
             final String imageDataVersion = cursor.getString(cursor.getColumnIndexOrThrow(IMAGE_DATA_VERSION));
             final boolean avoidCache = cursor.getShort(cursor.getColumnIndexOrThrow(AVOID_CACHE)) > 0;
+            final boolean animatedStickerPack = cursor.getShort(cursor.getColumnIndexOrThrow(ANIMATED_STICKER_PACK)) > 0;
             final StickerPack stickerPack = new StickerPack(identifier, name, publisher, trayImage, publisherEmail,
-                    publisherWebsite, privacyPolicyWebsite, licenseAgreementWebsite, imageDataVersion, avoidCache);
+                    publisherWebsite, privacyPolicyWebsite, licenseAgreementWebsite, imageDataVersion, avoidCache, animatedStickerPack);
             stickerPack.setAndroidPlayStoreLink(androidPlayStoreLink);
             stickerPack.setIosAppStoreLink(iosAppLink);
             stickerPackList.add(stickerPack);

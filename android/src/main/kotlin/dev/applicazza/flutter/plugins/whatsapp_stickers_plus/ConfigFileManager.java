@@ -59,8 +59,9 @@ public class ConfigFileManager {
         String androidPlayStoreLink = call.argument("androidPlayStoreLink");
         String iosAppStoreLink = call.argument("iosAppStoreLink");
         Map<String, List<String>> stickers = call.argument("stickers");
+        boolean animatedStickerPack = call.argument("animatedStickerPack");
         StickerPack newStickerPack = new StickerPack(identifier, name, publisher, trayImageFileName, "",
-                publisherWebsite, privacyPolicyWebsite, licenseAgreementWebsite, "1", false);
+                publisherWebsite, privacyPolicyWebsite, licenseAgreementWebsite, "1", false, animatedStickerPack);
         List<Sticker> newStickers = new ArrayList<Sticker>();
         assert stickers != null;
         for (Map.Entry<String, List<String>> entry : stickers.entrySet()) {

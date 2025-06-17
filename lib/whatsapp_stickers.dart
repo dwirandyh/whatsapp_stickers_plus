@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+
 import 'exceptions.dart';
 
 class WhatsappStickers {
@@ -15,6 +16,7 @@ class WhatsappStickers {
   String? licenseAgreementWebsite;
   String? androidPlayStoreLink;
   String? iosAppStoreLink;
+  bool animatedStickerPack;
 
   WhatsappStickers({
     required this.identifier,
@@ -26,6 +28,7 @@ class WhatsappStickers {
     this.licenseAgreementWebsite,
     this.androidPlayStoreLink,
     this.iosAppStoreLink,
+    this.animatedStickerPack = false,
   });
 
   void addSticker(WhatsappStickerImage image, List<String> emojis) {
@@ -45,6 +48,7 @@ class WhatsappStickers {
       payload['androidPlayStoreLink'] = androidPlayStoreLink;
       payload['iosAppStoreLink'] = iosAppStoreLink;
       payload['stickers'] = _stickers;
+      payload['animatedStickerPack'] = animatedStickerPack;
       await _channel.invokeMethod('sendToWhatsApp', payload);
     } on PlatformException catch (e) {
       switch (e.code.toUpperCase()) {
