@@ -17,6 +17,7 @@ class WhatsappStickers {
   String? androidPlayStoreLink;
   String? iosAppStoreLink;
   bool animatedStickerPack;
+  String? imageDataVersion;
 
   WhatsappStickers({
     required this.identifier,
@@ -29,6 +30,7 @@ class WhatsappStickers {
     this.androidPlayStoreLink,
     this.iosAppStoreLink,
     this.animatedStickerPack = false,
+    this.imageDataVersion,
   });
 
   void addSticker(WhatsappStickerImage image, List<String> emojis) {
@@ -49,6 +51,7 @@ class WhatsappStickers {
       payload['iosAppStoreLink'] = iosAppStoreLink;
       payload['stickers'] = _stickers;
       payload['animatedStickerPack'] = animatedStickerPack;
+      payload['imageDataVersion'] = imageDataVersion;
       await _channel.invokeMethod('sendToWhatsApp', payload);
     } on PlatformException catch (e) {
       switch (e.code.toUpperCase()) {
