@@ -121,7 +121,8 @@ class ImageData {
     static func imageDataIfCompliant(rawData: Data, extensionType: ImageDataExtension, isTray: Bool) throws -> ImageData {
         let imageData = ImageData(data: rawData, type: extensionType)
 
-        guard !imageData.animated else {
+        // Tray images cannot be animated
+        if isTray && imageData.animated {
             throw StickerPackError.animatedImagesNotSupported
         }
 
@@ -134,15 +135,44 @@ class ImageData {
                 throw StickerPackError.incorrectImageSize(imageData.image!.size)
             }
         } else {
-            guard imageData.bytesSize <= Limits.MaxStickerFileSize else {
+            // Validate file size based on animation status
+            let maxFileSize = imageData.animated ? Limits.MaxAnimatedStickerFileSize : Limits.MaxStaticStickerFileSize
+            guard imageData.bytesSize <= maxFileSize else {
                 throw StickerPackError.imageTooBig(imageData.bytesSize)
             }
 
             guard imageData.image!.size == Limits.ImageDimensions else {
                 throw StickerPackError.incorrectImageSize(imageData.image!.size)
             }
+            
+            // Additional validation for animated stickers
+            if imageData.animated {
+                try validateAnimatedSticker(imageData: imageData)
+            }
         }
 
         return imageData
+    }
+    
+    private static func validateAnimatedSticker(imageData: ImageData) throws {
+        guard let webpData = imageData.webpData else {
+            return
+        }
+        
+        // Check minimum frame duration
+        if let minFrameDuration = WebPManager.shared.minFrameDuration(webPData: webpData) {
+            let minFrameDurationMS = Int(minFrameDuration * 1000)
+            if minFrameDurationMS < Limits.MinAnimatedStickerFrameDurationMS {
+                throw StickerPackError.minFrameDurationTooShort
+            }
+        }
+        
+        // Check total animation duration
+        if let totalDuration = WebPManager.shared.totalAnimationDuration(webPData: webpData) {
+            let totalDurationMS = Int(totalDuration * 1000)
+            if totalDurationMS > Limits.MaxAnimatedStickerTotalDurationMS {
+                throw StickerPackError.totalAnimationDurationTooLong
+            }
+        }
     }
 }

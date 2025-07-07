@@ -28,4 +28,34 @@ class WebPManager {
     func encode(pngData data: Data) -> Data? {
         return SDImageWebPCoder.shared.encodedData(with: UIImage(data: data), format: .webP)
     }
+    
+    func minFrameDuration(webPData data: Data) -> TimeInterval? {
+        guard let image = decode(webPData: data), isAnimated(webPData: data) else {
+            return nil
+        }
+        
+        // Get frame durations from animated image
+        if let animatedImage = image as? SDAnimatedImage {
+            var minDuration: TimeInterval = Double.greatestFiniteMagnitude
+            
+            for i in 0..<animatedImage.animatedImageFrameCount {
+                let duration = animatedImage.animatedImageDuration(at: i)
+                if duration < minDuration {
+                    minDuration = duration
+                }
+            }
+            
+            return minDuration == Double.greatestFiniteMagnitude ? nil : minDuration
+        }
+        
+        return nil
+    }
+    
+    func totalAnimationDuration(webPData data: Data) -> TimeInterval? {
+        guard let image = decode(webPData: data), isAnimated(webPData: data) else {
+            return nil
+        }
+        
+        return image.duration
+    }
 }

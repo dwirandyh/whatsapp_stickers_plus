@@ -77,6 +77,14 @@ class WhatsappStickers {
           throw WhatsappStickersAlreadyAddedException(e.message);
         case WhatsappStickersCancelledException.code:
           throw WhatsappStickersCancelledException(e.message);
+        case WhatsappStickersMinFrameDurationTooShortException.code:
+          throw WhatsappStickersMinFrameDurationTooShortException(e.message);
+        case WhatsappStickersTotalAnimationDurationTooLongException.code:
+          throw WhatsappStickersTotalAnimationDurationTooLongException(e.message);
+        case WhatsappStickersAnimatedStickerPackWithStaticStickersException.code:
+          throw WhatsappStickersAnimatedStickerPackWithStaticStickersException(e.message);
+        case WhatsappStickersStaticStickerPackWithAnimatedStickersException.code:
+          throw WhatsappStickersStaticStickerPackWithAnimatedStickersException(e.message);
         default:
           throw WhatsappStickersException(e.message);
       }

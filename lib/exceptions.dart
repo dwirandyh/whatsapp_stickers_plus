@@ -109,3 +109,39 @@ class WhatsappStickersCancelledException extends WhatsappStickersException {
   @override
   String toString() => 'Cancelled';
 }
+
+class WhatsappStickersMinFrameDurationTooShortException extends WhatsappStickersException {
+  static const String code = 'MIN_FRAME_DURATION_TOO_SHORT';
+
+  WhatsappStickersMinFrameDurationTooShortException(String? cause) : super(cause);
+
+  @override
+  String toString() => 'Animated sticker frame duration too short';
+}
+
+class WhatsappStickersTotalAnimationDurationTooLongException extends WhatsappStickersException {
+  static const String code = 'TOTAL_ANIMATION_DURATION_TOO_LONG';
+
+  WhatsappStickersTotalAnimationDurationTooLongException(String? cause) : super(cause);
+
+  @override
+  String toString() => 'Animated sticker total duration too long';
+}
+
+class WhatsappStickersAnimatedStickerPackWithStaticStickersException extends WhatsappStickersException {
+  static const String code = 'ANIMATED_STICKER_PACK_WITH_STATIC_STICKERS';
+
+  WhatsappStickersAnimatedStickerPackWithStaticStickersException(String? cause) : super(cause);
+
+  @override
+  String toString() => 'Animated sticker pack cannot contain static stickers';
+}
+
+class WhatsappStickersStaticStickerPackWithAnimatedStickersException extends WhatsappStickersException {
+  static const String code = 'STATIC_STICKER_PACK_WITH_ANIMATED_STICKERS';
+
+  WhatsappStickersStaticStickerPackWithAnimatedStickersException(String? cause) : super(cause);
+
+  @override
+  String toString() => 'Static sticker pack cannot contain animated stickers';
+}
