@@ -36,13 +36,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import static dev.applicazza.flutter.plugins.whatsapp_stickers_plus.ConfigFileManager.CONTENT_FILE_NAME;
-
 public class StickerContentProvider extends ContentProvider {
 
     /**
-     * Do not change the strings listed below, as these are used by WhatsApp. And
-     * changing these will break the interface between sticker app and WhatsApp.
+     * Do not change the strings listed below, as these are used by WhatsApp. And changing these will break the interface between sticker app and WhatsApp.
      */
     public static final String STICKER_PACK_IDENTIFIER_IN_QUERY = "sticker_pack_identifier";
     public static final String STICKER_PACK_NAME_IN_QUERY = "sticker_pack_name";
@@ -53,16 +50,18 @@ public class StickerContentProvider extends ContentProvider {
     public static final String PUBLISHER_EMAIL = "sticker_pack_publisher_email";
     public static final String PUBLISHER_WEBSITE = "sticker_pack_publisher_website";
     public static final String PRIVACY_POLICY_WEBSITE = "sticker_pack_privacy_policy_website";
-    public static final String LICENSE_AGREENMENT_WEBSITE = "sticker_pack_license_agreement_website";
+    public static final String LICENSE_AGREEMENT_WEBSITE = "sticker_pack_license_agreement_website";
     public static final String IMAGE_DATA_VERSION = "image_data_version";
     public static final String AVOID_CACHE = "whatsapp_will_not_cache_stickers";
+    public static final String ANIMATED_STICKER_PACK = "animated_sticker_pack";
 
     public static final String STICKER_FILE_NAME_IN_QUERY = "sticker_file_name";
     public static final String STICKER_FILE_EMOJI_IN_QUERY = "sticker_emoji";
+    public static final String STICKER_FILE_ACCESSIBILITY_TEXT_IN_QUERY = "sticker_accessibility_text";
+    private static final String CONTENT_FILE_NAME = "contents.json";
 
     /**
-     * Do not change the values in the UriMatcher because otherwise, WhatsApp will
-     * not be able to fetch the stickers from the ContentProvider.
+     * Do not change the values in the UriMatcher because otherwise, WhatsApp will not be able to fetch the stickers from the ContentProvider.
      */
     private static final UriMatcher MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
     public static final String METADATA = "metadata";
@@ -114,7 +113,7 @@ public class StickerContentProvider extends ContentProvider {
 
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection, String selection,
-            String[] selectionArgs, String sortOrder) {
+                        String[] selectionArgs, String sortOrder) {
         final int code = MATCHER.match(uri);
         if (code == METADATA_CODE) {
             return getPackForAllStickerPacks(uri);
@@ -136,6 +135,7 @@ public class StickerContentProvider extends ContentProvider {
         }
         return null;
     }
+
 
     @Override
     public String getType(@NonNull Uri uri) {
@@ -189,13 +189,13 @@ public class StickerContentProvider extends ContentProvider {
             }
         }
 
-        return getStickerPackInfo(uri, new ArrayList<StickerPack>());
+        return getStickerPackInfo(uri, new ArrayList<>());
     }
 
     @NonNull
     private Cursor getStickerPackInfo(@NonNull Uri uri, @NonNull List<StickerPack> stickerPackList) {
         MatrixCursor cursor = new MatrixCursor(
-                new String[] {
+                new String[]{
                         STICKER_PACK_IDENTIFIER_IN_QUERY,
                         STICKER_PACK_NAME_IN_QUERY,
                         STICKER_PACK_PUBLISHER_IN_QUERY,
@@ -205,9 +205,10 @@ public class StickerContentProvider extends ContentProvider {
                         PUBLISHER_EMAIL,
                         PUBLISHER_WEBSITE,
                         PRIVACY_POLICY_WEBSITE,
-                        LICENSE_AGREENMENT_WEBSITE,
+                        LICENSE_AGREEMENT_WEBSITE,
                         IMAGE_DATA_VERSION,
                         AVOID_CACHE,
+                        ANIMATED_STICKER_PACK,
                 });
         for (StickerPack stickerPack : stickerPackList) {
             MatrixCursor.RowBuilder builder = cursor.newRow();
@@ -223,6 +224,7 @@ public class StickerContentProvider extends ContentProvider {
             builder.add(stickerPack.licenseAgreementWebsite);
             builder.add(stickerPack.imageDataVersion);
             builder.add(stickerPack.avoidCache ? 1 : 0);
+            builder.add(stickerPack.animatedStickerPack ? 1 : 0);
         }
         cursor.setNotificationUri(Objects.requireNonNull(getContext()).getContentResolver(), uri);
         return cursor;
@@ -231,12 +233,11 @@ public class StickerContentProvider extends ContentProvider {
     @NonNull
     private Cursor getStickersForAStickerPack(@NonNull Uri uri) {
         final String identifier = uri.getLastPathSegment();
-        MatrixCursor cursor = new MatrixCursor(
-                new String[] { STICKER_FILE_NAME_IN_QUERY, STICKER_FILE_EMOJI_IN_QUERY });
+        MatrixCursor cursor = new MatrixCursor(new String[]{STICKER_FILE_NAME_IN_QUERY, STICKER_FILE_EMOJI_IN_QUERY, STICKER_FILE_ACCESSIBILITY_TEXT_IN_QUERY});
         for (StickerPack stickerPack : getStickerPackList()) {
             if (identifier.equals(stickerPack.identifier)) {
                 for (Sticker sticker : stickerPack.getStickers()) {
-                    cursor.addRow(new Object[] { sticker.imageFileName, TextUtils.join(",", sticker.emojis) });
+                    cursor.addRow(new Object[]{sticker.imageFileName, TextUtils.join(",", sticker.emojis), sticker.accessibilityText});
                 }
             }
         }
@@ -258,7 +259,7 @@ public class StickerContentProvider extends ContentProvider {
         if (TextUtils.isEmpty(fileName)) {
             throw new IllegalArgumentException("file name is empty, uri: " + uri);
         }
-        // making sure the file that is trying to be fetched is in the list of stickers.
+        //making sure the file that is trying to be fetched is in the list of stickers.
         for (StickerPack stickerPack : getStickerPackList()) {
             if (identifier.equals(stickerPack.identifier)) {
                 if (fileName.equals(stickerPack.trayImageFile)) {
@@ -307,6 +308,7 @@ public class StickerContentProvider extends ContentProvider {
         }
     }
 
+
     @Override
     public int delete(@NonNull Uri uri, @Nullable String selection, String[] selectionArgs) {
         throw new UnsupportedOperationException("Not supported");
@@ -319,7 +321,7 @@ public class StickerContentProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, ContentValues values, String selection,
-            String[] selectionArgs) {
+                      String[] selectionArgs) {
         throw new UnsupportedOperationException("Not supported");
     }
 }

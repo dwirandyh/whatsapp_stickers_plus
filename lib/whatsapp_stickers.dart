@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+
 import 'exceptions.dart';
 
 class WhatsappStickers {
@@ -15,6 +16,8 @@ class WhatsappStickers {
   String? licenseAgreementWebsite;
   String? androidPlayStoreLink;
   String? iosAppStoreLink;
+  bool animatedStickerPack;
+  String? imageDataVersion;
 
   WhatsappStickers({
     required this.identifier,
@@ -26,6 +29,8 @@ class WhatsappStickers {
     this.licenseAgreementWebsite,
     this.androidPlayStoreLink,
     this.iosAppStoreLink,
+    this.animatedStickerPack = false,
+    this.imageDataVersion,
   });
 
   void addSticker(WhatsappStickerImage image, List<String> emojis) {
@@ -45,6 +50,8 @@ class WhatsappStickers {
       payload['androidPlayStoreLink'] = androidPlayStoreLink;
       payload['iosAppStoreLink'] = iosAppStoreLink;
       payload['stickers'] = _stickers;
+      payload['animatedStickerPack'] = animatedStickerPack;
+      payload['imageDataVersion'] = imageDataVersion;
       await _channel.invokeMethod('sendToWhatsApp', payload);
     } on PlatformException catch (e) {
       switch (e.code.toUpperCase()) {
@@ -70,6 +77,14 @@ class WhatsappStickers {
           throw WhatsappStickersAlreadyAddedException(e.message);
         case WhatsappStickersCancelledException.code:
           throw WhatsappStickersCancelledException(e.message);
+        case WhatsappStickersMinFrameDurationTooShortException.code:
+          throw WhatsappStickersMinFrameDurationTooShortException(e.message);
+        case WhatsappStickersTotalAnimationDurationTooLongException.code:
+          throw WhatsappStickersTotalAnimationDurationTooLongException(e.message);
+        case WhatsappStickersAnimatedStickerPackWithStaticStickersException.code:
+          throw WhatsappStickersAnimatedStickerPackWithStaticStickersException(e.message);
+        case WhatsappStickersStaticStickerPackWithAnimatedStickersException.code:
+          throw WhatsappStickersStaticStickerPackWithAnimatedStickersException(e.message);
         default:
           throw WhatsappStickersException(e.message);
       }

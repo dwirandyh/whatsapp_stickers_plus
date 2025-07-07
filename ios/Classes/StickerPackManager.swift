@@ -56,6 +56,7 @@ class StickerPackManager {
                 let packName: String = pack["name"] as! String
                 let packPublisher: String = pack["publisher"] as! String
                 let packTrayImageFileName: String = pack["tray_image_file"] as! String
+                let packAnimated: Bool = pack["animated_sticker_pack"] as? Bool ?? false
 
                 var packPublisherWebsite: String? = pack["publisher_website"] as? String
                 var packPrivacyPolicyWebsite: String? = pack["privacy_policy_website"] as? String
@@ -80,7 +81,7 @@ class StickerPackManager {
                 var stickerPack: StickerPack?
 
                 do {
-                   stickerPack = try StickerPack(identifier: packIdentifier!, name: packName, publisher: packPublisher, trayImageFileName: packTrayImageFileName, publisherWebsite: packPublisherWebsite, privacyPolicyWebsite: packPrivacyPolicyWebsite, licenseAgreementWebsite: packLicenseAgreementWebsite)
+                   stickerPack = try StickerPack(identifier: packIdentifier!, name: packName, publisher: packPublisher, trayImageFileName: packTrayImageFileName, animated: packAnimated, publisherWebsite: packPublisherWebsite, privacyPolicyWebsite: packPrivacyPolicyWebsite, licenseAgreementWebsite: packLicenseAgreementWebsite)
                 } catch StickerPackError.fileNotFound {
                     fatalError("\(packTrayImageFileName) not found.")
                 } catch StickerPackError.emptyString {
@@ -119,12 +120,20 @@ class StickerPackManager {
                     } catch StickerPackError.incorrectImageSize(let imageDimensions) {
                         fatalError("\(filename): \(imageDimensions) is not compliant with sticker images dimensions, \(Limits.ImageDimensions).")
                     } catch StickerPackError.animatedImagesNotSupported {
-                        fatalError("\(filename) is an animated image. Animated images are not supported.")
-                    } catch StickerPackError.tooManyEmojis {
-                        fatalError("\(filename) has too many emojis. \(Limits.MaxEmojisCount) is the maximum number.")
-                    } catch {
-                        fatalError(error.localizedDescription)
-                    }
+                         fatalError("\(filename) is an animated image. Animated images are not supported for tray images.")
+                     } catch StickerPackError.minFrameDurationTooShort {
+                         fatalError("\(filename) has frame duration shorter than \(Limits.MinAnimatedStickerFrameDurationMS)ms.")
+                     } catch StickerPackError.totalAnimationDurationTooLong {
+                         fatalError("\(filename) has total animation duration longer than \(Limits.MaxAnimatedStickerTotalDurationMS)ms.")
+                     } catch StickerPackError.animatedStickerPackWithStaticStickers {
+                         fatalError("\(filename) is a static sticker in an animated sticker pack.")
+                     } catch StickerPackError.staticStickerPackWithAnimatedStickers {
+                         fatalError("\(filename) is an animated sticker in a static sticker pack.")
+                     } catch StickerPackError.tooManyEmojis {
+                         fatalError("\(filename) has too many emojis. \(Limits.MaxEmojisCount) is the maximum number.")
+                     } catch {
+                         fatalError(error.localizedDescription)
+                     }
                 }
 
                 if stickers.count < Limits.MinStickersPerPack {

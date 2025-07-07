@@ -85,7 +85,6 @@ class Sticker {
      - .unsupportedImageFormat if image is not png or webp
      - .imageTooBig if the image file size is above the supported limit (100KB)
      - .incorrectImageSize if the image is not within the allowed size
-     - .animatedImagesNotSupported if the image is animated
      - .tooManyEmojis if there are too many emojis assigned to the sticker
      */
     init(contentsOfFile filename: String, emojis: [String]?) throws {
@@ -103,7 +102,6 @@ class Sticker {
      *  - Throws:
      - .imageTooBig if the image file size is above the supported limit (100KB)
      - .incorrectImageSize if the image is not within the allowed size
-     - .animatedImagesNotSupported if the image is animated
      - .tooManyEmojis if there are too many emojis assigned to the sticker
      */
     init(imageData: Data, type: ImageDataExtension, emojis: [String]?) throws {

@@ -20,6 +20,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -59,15 +61,37 @@ public class ConfigFileManager {
         String androidPlayStoreLink = call.argument("androidPlayStoreLink");
         String iosAppStoreLink = call.argument("iosAppStoreLink");
         Map<String, List<String>> stickers = call.argument("stickers");
+        boolean animatedStickerPack = call.argument("animatedStickerPack");
+        String imageDataVersion = call.argument("imageDataVersion");
         StickerPack newStickerPack = new StickerPack(identifier, name, publisher, trayImageFileName, "",
-                publisherWebsite, privacyPolicyWebsite, licenseAgreementWebsite, "1", false);
+                publisherWebsite, privacyPolicyWebsite, licenseAgreementWebsite, imageDataVersion, false, animatedStickerPack);
         List<Sticker> newStickers = new ArrayList<Sticker>();
         assert stickers != null;
+        
+        // Log original order
+        Log.d("ConfigFileManager", "Original sticker order:");
+        int index = 0;
         for (Map.Entry<String, List<String>> entry : stickers.entrySet()) {
-            Sticker s = new Sticker(getFileName(entry.getKey()), entry.getValue());
-
+            Log.d("ConfigFileManager", (index + 1) + ". " + entry.getKey());
+            Sticker s = new Sticker(getFileName(entry.getKey()), entry.getValue(), "");
             newStickers.add(s);
+            index++;
         }
+        
+        // Sort stickers alphabetically by filename
+        Collections.sort(newStickers, new Comparator<Sticker>() {
+            @Override
+            public int compare(Sticker s1, Sticker s2) {
+                return s1.imageFileName.compareToIgnoreCase(s2.imageFileName);
+            }
+        });
+        
+        // Log sorted order
+        Log.d("ConfigFileManager", "Sorted sticker order (alphabetically):");
+        for (int i = 0; i < newStickers.size(); i++) {
+            Log.d("ConfigFileManager", (i + 1) + ". " + newStickers.get(i).imageFileName);
+        }
+        
         newStickerPack.setStickers(newStickers);
         newStickerPack.setAndroidPlayStoreLink(androidPlayStoreLink);
         newStickerPack.setIosAppStoreLink(iosAppStoreLink);
@@ -119,6 +143,7 @@ public class ConfigFileManager {
             obj.put("publisher_website", s.publisherWebsite);
             obj.put("privacy_policy_website", s.privacyPolicyWebsite);
             obj.put("license_agreement_website", s.licenseAgreementWebsite);
+            obj.put("animated_sticker_pack", s.animatedStickerPack);
 
             JSONArray stickerList = new JSONArray();
             for (Sticker _sticker : s.getStickers()) {
